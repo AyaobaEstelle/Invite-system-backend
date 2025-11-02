@@ -32,4 +32,4 @@ export class User extends Document {
   employees: Types.ObjectId[];
 }
 
-export const AdminSchema = SchemaFactory.createForClass(User);
+export const UserSchema = SchemaFactory.createForClass(User);
