@@ -14,7 +14,10 @@ export class EmployeesController {
   }
   @Get('/:id')
   @UseGuards(AuthGuard)
-  getSingleEmployee(@Param('id') id: string) {
-    return this.employeesService.getSingleEmployee(id);
+  getSingleEmployee(
+    @Request() req: { user: UserDocument },
+    @Param('id') id: string,
+  ) {
+    return this.employeesService.getSingleEmployee(req.user, id);
   }
 }

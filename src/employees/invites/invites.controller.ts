@@ -17,8 +17,11 @@ export class InvitesController {
 
   @Post('/')
   @UseGuards(AuthGuard)
-  createInvite(@Request() req: { user: UserDocument }) {
-    return this.invitesService.createInvite(req.user);
+  async createInvite(
+    @Request() req: { user: UserDocument },
+    @Body('email') email: string,
+  ) {
+    return this.invitesService.createInvite(req.user, email);
   }
 
   @Get('/')

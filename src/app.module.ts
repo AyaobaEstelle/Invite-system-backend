@@ -9,11 +9,11 @@ import { ProfileModule } from './profile/profile.module';
 import { UsersController } from './users/users.controller';
 import { InvitesModule } from './employees/invites/invites.module';
 import { EmployeesModule } from './employees/employees.module';
-import { AdminSchema, User } from './schemas/user.schema';
+import { User, UserSchema } from './schemas/user.schema';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([{ name: User.name, schema: AdminSchema }]),
+    MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
     ConfigModule.forRoot({
       isGlobal: true,
     }),

@@ -19,6 +19,9 @@ export class Invite extends Document {
 
   @Prop({ type: Types.ObjectId, ref: 'User', default: null })
   usedBy: Types.ObjectId;
+
+  @Prop({ required: true })
+  email: string;
 }
 
 export const InviteSchema = SchemaFactory.createForClass(Invite);
