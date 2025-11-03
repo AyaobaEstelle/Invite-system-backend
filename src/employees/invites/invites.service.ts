@@ -2,6 +2,7 @@ import {
   Injectable,
   NotFoundException,
   BadRequestException,
+  Logger,
 } from '@nestjs/common';
 import bcrypt from 'bcryptjs';
 import { InjectModel } from '@nestjs/mongoose';
@@ -13,6 +14,7 @@ import { MailService } from 'src/mail/mail.service';
 
 @Injectable()
 export class InvitesService {
+  private readonly logger = new Logger(InvitesService.name);
   constructor(
     @InjectModel(User.name) private userModel: Model<UserDocument>,
     @InjectModel(Invite.name) private inviteModel: Model<InviteDocument>,
@@ -20,45 +22,47 @@ export class InvitesService {
   ) {}
 
   async createInvite(adminUser: UserDocument, email: string) {
-    try {
-      if (!email) throw new BadRequestException('Email is required.');
+    if (!email) throw new BadRequestException('Email is required.');
 
-      const existingUser = await this.userModel.findOne({ email });
-      if (existingUser) {
-        throw new BadRequestException(
-          `User with email "${email}" already exists.`,
-        );
-      }
-
-      const token = randomatic('A0', 20);
-
-      const invite = new this.inviteModel({
-        invitedBy: adminUser._id,
-        email,
-        token,
-        createdAt: new Date(),
-      });
-
-      await invite.save();
-
-      await this.userModel.findByIdAndUpdate(adminUser._id, {
-        $push: { invites: invite._id },
-      });
-
-      const registrationLink = `${process.env.FRONTEND_URL}/employee/register/${token}`;
-      await this.mailService.sendInviteEmail(email, registrationLink);
-
-      return {
-        message: 'Invite created and email sent successfully',
-        email,
-        token,
-      };
-    } catch (error) {
-      console.error('Error creating invite:', error);
-      throw error;
+    const existingUser = await this.userModel.findOne({ email });
+    if (existingUser) {
+      throw new BadRequestException(
+        `User with email "${email}" already exists.`,
+      );
     }
-  }
 
+    const token = randomatic('A0', 20);
+
+    const invite = new this.inviteModel({
+      invitedBy: adminUser._id,
+      email,
+      token,
+      createdAt: new Date(),
+    });
+
+    await invite.save();
+
+    await this.userModel.findByIdAndUpdate(adminUser._id, {
+      $push: { invites: invite._id },
+    });
+
+    const emailResult = await this.mailService.sendInviteEmail(email, token);
+
+    if (!emailResult.success) {
+      this.logger.warn(`Invite created but email failed: ${emailResult.error}`);
+    }
+
+    return {
+      message: emailResult.success
+        ? 'Invite created and email sent successfully'
+        : 'Invite created but failed to send email',
+      email,
+      token,
+      emailSent: emailResult.success,
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      emailError: emailResult.success ? null : emailResult.error,
+    };
+  }
   async getInvites(adminUser: UserDocument) {
     try {
       const invites = await this.inviteModel

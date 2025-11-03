@@ -9,12 +9,23 @@ export class MailService {
 
   constructor() {
     this.transporter = nodemailer.createTransport({
-      service: 'gmail',
+      host: process.env.EMAIL_HOST,
+      port: Number(process.env.EMAIL_PORT),
+      secure: process.env.EMAIL_SECURE === 'true',
       auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS,
       },
     });
+
+    this.transporter
+      .verify()
+      .then(() => {
+        this.logger.log('SMTP connection verified');
+      })
+      .catch((err) => {
+        this.logger.error('SMTP connection failed', err.stack);
+      });
   }
 
   async sendInviteEmail(email: string, token: string) {
@@ -45,12 +56,13 @@ export class MailService {
     try {
       await this.transporter.sendMail(mailOptions);
       this.logger.log(`Invite email sent successfully to ${email}`);
-    } catch (error) {
+      return { success: true };
+    } catch (error: any) {
       this.logger.error(
-        ` Failed to send invite email to ${email}`,
+        ` Failed to send invite email to ${email}: ${error.message}`,
         error.stack,
       );
-      throw new Error('Email sending failed');
+      return { success: false, error: error.message };
     }
   }
 }
