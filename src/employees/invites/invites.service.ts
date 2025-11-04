@@ -59,7 +59,6 @@ export class InvitesService {
       email,
       token,
       emailSent: emailResult.success,
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       emailError: emailResult.success ? null : emailResult.error,
     };
   }
