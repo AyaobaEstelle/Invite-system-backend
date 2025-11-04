@@ -90,7 +90,7 @@ export class InvitesService {
     return { message: 'Invite found', invite };
   }
 
-  async useInvite(token: string, body: { fullName: string; password: string }) {
+  async useInvite(token: string, body: { name: string; password: string }) {
     const invite = await this.inviteModel.findOne({ token, used: false });
     if (!invite) {
       throw new NotFoundException(
@@ -109,7 +109,7 @@ export class InvitesService {
 
     const hashedPassword = await bcrypt.hash(body.password, 10);
     const newEmployee = new this.userModel({
-      name: body.fullName,
+      name: body.name,
       email,
       password: hashedPassword,
       is_verified: true,
