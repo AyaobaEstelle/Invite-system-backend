@@ -83,7 +83,7 @@ export class MailService {
     token: string,
   ): Promise<{ success: boolean; error?: string }> {
     this.logger.log(`Preparing to send invite email to: ${email}`);
-    const inviteLink = `${process.env.FRONTEND_URL}/register/${token}`;
+    const inviteLink = `${process.env.FRONTEND_URL}/employee/register/${token}`;
 
     const mailOptions = {
       to: email,
